@@ -1212,8 +1212,8 @@ WS.addBlock({
 
     { n: 27, type: "practice", min: 5, title: "Подключаем Google и читаем таблицу",
       lead: "Внешний источник: Claude читает таблицу беклога и говорит, что в ней есть.",
-      speech: ["Кто закончил с файлами — подключаем Google к Claude под своим аккаунтом.", "Сделайте себе копию синтетической таблицы по ссылке из материалов: в ней беклог, нагрузка и контроль на выходе. Дайте Claude ссылку и промпт «Прочитай таблицу». Он перечислит вкладки и колонки и скажет, насколько они заполнены.", "Смотрите, чтобы он не додумывал: пустая ячейка должна остаться пустой. Пять минут."],
-      files: [["xlsx", "Ладья — проектная нагрузка", "Беклог, нагрузка, контроль на выходе. Загрузите в Google Таблицы", "files/ladya-proektnaya-nagruzka.xlsx"]],
+      speech: ["Кто закончил с файлами — подключаем Google к Claude под своим аккаунтом.", "Сделайте себе копию синтетической таблицы по ссылке на экране: в ней беклог, нагрузка и контроль на выходе. Дайте Claude ссылку и промпт «Прочитай таблицу». Он перечислит вкладки и колонки и скажет, насколько они заполнены.", "Смотрите, чтобы он не додумывал: пустая ячейка должна остаться пустой. Пять минут."],
+      files: [["gsheet", "Ладья — проектная нагрузка", "Сделать копию в свой Google Drive", "https://docs.google.com/spreadsheets/d/1NbsEokI6fDjm2JNinvkvtsadjsJJQQuJjFcxGrvENpo/copy"], ["xlsx", "Ладья — проектная нагрузка", "Если копия не открывается: загрузите файл в Google Таблицы", "files/ladya-proektnaya-nagruzka.xlsx"]],
       prompts: ["Прочитай таблицу"],
       check: ["Google подключён к Claude", "Claude перечислил вкладки и колонки таблицы", "Заполненность — цифрами по каждой колонке", "Ничего не придумано: пустое осталось пустым"],
       co: { plan: "Google не подключается — скажите мне, разберём вместе." },
@@ -1968,7 +1968,7 @@ WS.prepGuide = {
     ] },
     { t: "steps", title: "4. Данные для практики", steps: [
       { title: "Транскрипт и документы", text: ["Подготовьте транскрипт одной рабочей встречи и 2–3 документа по проекту — например, бриф и запрос. Нет своих или их нельзя показывать — в зале дадим синтетику."] },
-      { title: "Копия таблицы беклога", text: ["Скачайте синтетическую таблицу, загрузите её в свой Google Drive, откройте и сохраните как Google Таблицу: Файл → Сохранить как Google Таблицу. С ней будем работать в блоке 02."], files: [["xlsx", "Ладья — проектная нагрузка", "Беклог, нагрузка, контроль на выходе", "files/ladya-proektnaya-nagruzka.xlsx"]] }
+      { title: "Копия таблицы беклога", text: ["Откройте ссылку и нажмите «Сделать копию» — синтетическая таблица появится в вашем Google Drive. С ней будем работать в блоке 02.", "Ссылка не открывается — скачайте файл .xlsx, загрузите его в Google Drive и сохраните как Google Таблицу: Файл → Сохранить как Google Таблицу."], files: [["gsheet", "Ладья — проектная нагрузка", "Сделать копию в свой Google Drive", "https://docs.google.com/spreadsheets/d/1NbsEokI6fDjm2JNinvkvtsadjsJJQQuJjFcxGrvENpo/copy"], ["xlsx", "Ладья — проектная нагрузка", "Запасной вариант: файл для загрузки", "files/ladya-proektnaya-nagruzka.xlsx"]] }
     ] },
     { t: "steps", title: "5. По желанию: терминал и Obsidian CLI", lead: { claude: "Понадобятся в блоке 05: Claude Code работает с Obsidian через его командную строку. Без них мастер-класс тоже пройдёте.", codex: "Понадобится в блоке 05. Отдельно ставить ничего не нужно: Codex сам работает с терминалом — включите только Obsidian CLI." }, steps: [
       { only: "claude", title: "Поставьте Claude Code на Mac", text: ["Откройте программу «Терминал», вставьте команду и нажмите Enter."], codeTitle: "macOS · Терминал", code: "curl -fsSL https://claude.ai/install.sh | bash" },
@@ -2015,7 +2015,7 @@ WS.prepGuide = {
   "use strict";
   var W = window.WS, M = W.meta, TY = W.types;
   var LET = "ABCDEFGHIJKLMNOP";
-  var EXT = { xlsx: 150, md: 300, pdf: 28, docx: 240, zip: 80, txt: 0 };
+  var EXT = { gsheet: 150, xlsx: 150, md: 300, pdf: 28, docx: 240, zip: 80, txt: 0 };
 
   /* ---------- утилиты ---------- */
   function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
@@ -2059,6 +2059,7 @@ WS.prepGuide = {
   }
   function fileCard(f) {
     var e = f[0], st = EXT[e] ? "background:oklch(0.8 0.12 " + EXT[e] + ")" : "background:var(--t-break)";
+    if (f[3] && /^https?:/.test(f[3])) return '<a class="file" href="' + esc(f[3]) + '" target="_blank" rel="noopener"><span class="ext" style="' + st + '">' + (e === "gsheet" ? "GS" : esc(e.toUpperCase())) + '</span><span><b>' + esc(f[1]) + "</b><small>" + esc(f[2] || "") + '</small></span><span class="dl" aria-hidden="true">↗</span></a>';
     var href = f[3] ? ((window.WS_FILES && window.WS_FILES[f[3]]) || "assets/" + f[3]) : "", dn = String(f[1]).replace(/[\\/:*?"<>|]/g, "") + "." + e;
     var link = f[3] ? '<a class="file" href="' + esc(href) + '" download="' + esc(dn) + '">' : '<a class="file" href="#" data-act="nofile" title="Файл появится ближе к мастер-классу">';
     return link + '<span class="ext" style="' + st + '">' + esc(e.toUpperCase()) + '</span><span><b>' + esc(f[1]) + "</b><small>" + esc(f[2] || "") + '</small></span><span class="dl" aria-hidden="true">↓</span></a>';
